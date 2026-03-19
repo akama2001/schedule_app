@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="hero-section">
+        <div class="features">
+            <div class="feature-item">
+                <img src="/static/header_logo.png">
+                <h1>Расписание на текущую и следующую неделю</p>
+
+            </div>
+            <p class="subtitle">Выберите свою специальность и группу для просмотра расписания</p>
+        </div>
+
+    <div class="selection-card">
+        <form action="{{ url_for('schedule') }}" method="POST" id="schedule-form">
+            <div class="form-group">
+                <label for="specialty">Специальность</label>
+                <select name="specialty_id" id="specialty" required class="form-control">
+                    <option value="">-- Выберите специальность --</option>
+                    {% for specialty in specialties %}
+                    <option value="{{ specialty.id }}">{{ specialty.code }} - {{ specialty.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="group">Группа</label>
+                <select name="group_id" id="group" required class="form-control" disabled>
+                    <option value="">-- Сначала выберите специальность --</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-large" id="submit-btn" disabled>
+                Показать расписание
+            </button>
+        </form>
+    </div>
+
+
+
+</div>
+
+<script>
+document.getElementById('specialty').addEventListener('change', function() {
+    const specialtyId = this.value;
+    const groupSelect = document.getElementById('group');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    if (!specialtyId) {
+        groupSelect.innerHTML = '<option value="">-- Сначала выберите специальность --</option>';
+        groupSelect.disabled = true;
+        submitBtn.disabled = true;
+        return;
+    }
+    
+    fetch(`/get_groups/${specialtyId}`)
+        .then(response => response.json())
+        .then(groups => {
+            groupSelect.innerHTML = '<option value="">-- Выберите группу --</option>';
+            groups.forEach(group => {
+                const option = document.createElement('option');
+                option.value = group.id;
+                option.textContent = `${group.name} (${group.course} курс)`;
+                groupSelect.appendChild(option);
+            });
+            groupSelect.disabled = false;
+        });
+});
+
+document.getElementById('group').addEventListener('change', function() {
+    document.getElementById('submit-btn').disabled = !this.value;
+});
+</script>
+{% endblock %}

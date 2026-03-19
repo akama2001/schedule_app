@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Расписание {{ group.name }} - SchedulePro{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Шапка расписания -->
+    <section class="schedule-header">
+        <div class="header-main">
+            <div class="breadcrumbs">
+                <a href="{{ url_for('index') }}" class="breadcrumb-link">Главная</a>
+                <span class="breadcrumb-separator">/</span>
+                <span class="breadcrumb-current">Расписание</span>
+            </div>
+            <h2 class="schedule-title">Расписание занятий {{ specialty.name }} {{ group.name }} группы {{ group.course }} курса
+        </div>
+        <div class="header-info">
+            <div class="date-range">
+                <span class="date-label">Период:</span>
+                <span class="dates">{{ start_date.strftime('%d.%m.%Y') }} — {{ end_date.strftime('%d.%m.%Y') }}</span>
+            </div>
+            
+            {% if last_update %}
+            <div class="update-info">
+                <span class="update-label-header">Обновлено:</span>
+                <span class="update-time-header" title="Дата последнего изменения расписания для этой группы">
+                    {{ last_update.strftime('%d.%m.%Y в %H:%M') }}
+                </span>
+            </div>
+            {% endif %}
+            
+            <div class="header-actions">
+                <button onclick="window.print()" class="btn btn-outline btn-sm">
+                    <span class="btn-icon">🖨️</span>
+                    Печать
+                </button>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary btn-sm">
+                    <span class="btn-icon">←</span>
+                    Назад
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Легенда -->
+<div class="lesson-types">
+    <div class="legend-item">
+        <span class="legend-color" style="display: inline-block; width: 12px; height: 12px; background: #9aeeb3; border: 1px solid #86efac; border-radius: 4px;"></span>
+        <span>Лекция</span>
+    </div>
+    <div class="legend-item">
+        <span class="legend-color" style="display: inline-block; width: 12px; height: 12px; background: #7a8ea8; border: 1px solid #93c5fd; border-radius: 4px;"></span>
+        <span>Практика</span>
+    </div>
+</div
+
+    <!-- Вкладки недель -->
+    <section class="week-tabs-section">
+        <div class="week-tabs">
+            <button class="week-tab active" data-tab="week1">
+                <span class="tab-label">Текущая неделя</span>
+                <span class="tab-dates">{{ week1[0].strftime('%d.%m') }} — {{ week1[6].strftime('%d.%m') }}</span>
+            </button>
+            <button class="week-tab" data-tab="week2">
+                <span class="tab-label">Следующая неделя</span>
+                <span class="tab-dates">{{ week2[0].strftime('%d.%m') }} — {{ week2[6].strftime('%d.%m') }}</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- Содержимое вкладок -->
+    <section class="week-content">
+        <!-- Неделя 1 (активна по умолчанию) -->
+        <div class="week-panel active" id="week1">
+            <div class="schedule-grid">
+                {% for date in week1 %}
+                {% set date_str = date.strftime('%Y-%m-%d') %}
+                {% set day_data = schedule[date_str] %}
+                
+                <div class="day-column {% if day_data.is_today %}today{% endif %} {% if not day_data.lessons %}empty{% endif %}" data-date="{{ date_str }}">
+                    <div class="day-header">
+                        <div class="day-info">
+                            <span class="day-name">{{ day_data.full_day_name }}</span>
+                            <span class="day-date">{{ date.strftime('%d.%m') }}</span>
+                        </div>
+                        {% if day_data.is_today %}
+                        <span class="today-badge">Сегодня</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="day-content" data-lessons-count="{{ day_data.lessons|length }}">
+                        {% if day_data.lessons %}
+                            {% for lesson in day_data.lessons %}
+                            <div class="lesson-card type-{{ lesson.lesson_type }}" 
+                                 data-lesson-type="{{ lesson.lesson_type }}"
+                                 title="Обновлено: {{ lesson.uploaded_at.strftime('%d.%m.%Y %H:%M') }}">
+                                <div class="lesson-time">
+                                    <span class="time-start">{{ lesson.start_time.strftime('%H:%M') }}</span>
+                                    <span class="time-divider"></span>
+                                    <span class="time-end">{{ lesson.end_time.strftime('%H:%M') }}</span>
+                                </div>
+                                <div class="lesson-body">
+                                    <h4 class="lesson-subject">{{ lesson.subject_name }}</h4>
+                                    <div class="lesson-meta">
+                                        <span class="lesson-type-badge">{{ lesson.lesson_type }} </style></span>
+                                        <span class="lesson-location">📍 {{ lesson.location }}</span>
+                                    </div>
+                                    {% if lesson.teacher %}
+                                    <div class="lesson-teacher">👤 {{ lesson.teacher }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="no-lessons">
+                                <span class="no-lessons-icon">☕</span>
+                                <p>Нет занятий</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Неделя 2 -->
+        <div class="week-panel" id="week2">
+            <div class="schedule-grid">
+                {% for date in week2 %}
+                {% set date_str = date.strftime('%Y-%m-%d') %}
+                {% set day_data = schedule[date_str] %}
+                
+                <div class="day-column {% if not day_data.lessons %}empty{% endif %}" data-date="{{ date_str }}">
+                    <div class="day-header">
+                        <div class="day-info">
+                            <span class="day-name">{{ day_data.full_day_name }}</span>
+                            <span class="day-date">{{ date.strftime('%d.%m') }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="day-content" data-lessons-count="{{ day_data.lessons|length }}">
+                        {% if day_data.lessons %}
+                            {% for lesson in day_data.lessons %}
+                            <div class="lesson-card type-{{ lesson.lesson_type }}" 
+                                 data-lesson-type="{{ lesson.lesson_type }}"
+                                 title="Обновлено: {{ lesson.uploaded_at.strftime('%d.%m.%Y %H:%M') }}">
+                                <div class="lesson-time">
+                                    <span class="time-start">{{ lesson.start_time.strftime('%H:%M') }}</span>
+                                    <span class="time-divider"></span>
+                                    <span class="time-end">{{ lesson.end_time.strftime('%H:%M') }}</span>
+                                </div>
+                                <div class="lesson-body">
+                                    <h4 class="lesson-subject">{{ lesson.subject_name }}</h4>
+                                    <div class="lesson-meta">
+                                        <span class="lesson-type-badge">{{ lesson.lesson_type }}</span>
+                                        <span class="lesson-location">📍 {{ lesson.location }}</span>
+                                    </div>
+                                    {% if lesson.teacher %}
+                                    <div class="lesson-teacher">👤 {{ lesson.teacher }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="no-lessons">
+                                <span class="no-lessons-icon">☕</span>
+                                <p>Нет занятий</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Нижние действия -->
+    <section class="bottom-actions">
+        <a href="{{ url_for('index') }}" class="btn btn-primary">
+            <span class="btn-icon">🔄</span>
+            Выбрать другую группу
+        </a>
+    </section>
+</div>
+{% endblock %}
