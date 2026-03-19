@@ -5,12 +5,11 @@ from models import db, Specialty, Group, Lesson, UploadLog
 import random
 import os
 
-#test comment
-
 app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
 
+#test merge request
 
 def get_week_start(date=None):
     """Получить понедельник текущей недели"""
