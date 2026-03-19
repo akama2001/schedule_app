@@ -5,6 +5,7 @@ from models import db, Specialty, Group, Lesson, UploadLog
 import random
 import os
 
+app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
 
