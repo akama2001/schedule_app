@@ -31,11 +31,11 @@
                 </div>
                 {% if location %}
                 <div class="form-group">
-                    <a href="{{ url_for('manager_rooms') }}" class="btn btn-secondary">Сбросить</a>
+                    <a href="{{ url_for('manager_rooms') }}" class="btn btn-danger">Сбросить</a>
                 </div>
                 {% endif %}
                 <div class="form-group">
-                    <a href="{{ url_for('manager_room_create') }}" class="btn btn-primary">+ Добавить помещение</a>
+                    <a href="{{ url_for('manager_room_create') }}" class="btn btn-success">+ Добавить помещение</a>
                 </div>
             </div>
         </form>

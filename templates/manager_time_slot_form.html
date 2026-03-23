@@ -24,8 +24,8 @@
                 <input type="time" class="form-control" id="end_time" name="end_time" value="{{ slot.end_time.strftime('%H:%M') if slot else '' }}" required>
             </div>
             <div class="actions">
-                <button type="submit" class="btn btn-primary">Сохранить</button>
-                <a href="{{ url_for('manager_time_slots') }}" class="btn btn-secondary">Отмена</a>
+                <button type="submit" class="btn btn-success">Сохранить</button>
+                <a href="{{ url_for('manager_time_slots') }}" class="btn btn-danger">Отмена</a>
             </div>
         </form>
     </div>
