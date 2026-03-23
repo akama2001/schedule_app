@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Мои занятия</h2>
+    <div class="lessons-list">
+        {% for lesson in lessons %}
+        <div class="lesson-item">
+            <div>{{ lesson.lesson_date.strftime('%d.%m.%Y') }} {{ lesson.start_time.strftime('%H:%M') }} - {{ lesson.end_time.strftime('%H:%M') }}</div>
+            <div><strong>{{ lesson.subject_name }}</strong> ({{ lesson.lesson_type }})</div>
+            <div>Группа: {{ lesson.group.name }}</div>
+            <div>Статус: {{ lesson.status }}</div>
+            <div>
+                {% if lesson.status == 'scheduled' %}
+                <form method="POST" action="{{ url_for('confirm_lesson', lesson_id=lesson.id) }}" style="display:inline;">
+                    <button type="submit" class="btn btn-success">Подтвердить</button>
+                </form>
+                <form method="POST" action="{{ url_for('request_reschedule', lesson_id=lesson.id) }}" style="display:inline;">
+                    <button type="submit" class="btn btn-warning">Запросить перенос</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

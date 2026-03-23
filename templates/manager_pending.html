@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Занятия, требующие переноса{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="schedule-header" style="flex-direction: column;">
+        <h1>Занятия, требующие переноса</h1>
+        <p class="subtitle">Преподаватели запросили перенос этих занятий</p>
+    </div>
+
+    {% if lessons %}
+        <div class="lessons-list" style="display: flex; flex-direction: column; gap: 1rem;">
+            {% for lesson in lessons %}
+                <div class="lesson-item" style="background: var(--surface);">
+                    <div class="lesson-time">
+                        <span class="time-start">{{ lesson.lesson_date.strftime('%d.%m.%Y') }}</span>
+                        <span>{{ lesson.start_time.strftime('%H:%M') }} – {{ lesson.end_time.strftime('%H:%M') }}</span>
+                    </div>
+                    <div class="lesson-subject">{{ lesson.subject_name }} ({{ lesson.lesson_type }})</div>
+                    <div class="lesson-meta">
+                        <span>Группа: {{ lesson.group.name }}</span>
+                        <span>Преподаватель: {{ lesson.teacher or 'Не назначен' }}</span>
+                        <span>Аудитория: {{ lesson.location }}</span>
+                    </div>
+                    <div style="margin-top: 0.5rem;">
+                        <a href="{{ url_for('manager_edit_lesson', lesson_id=lesson.id) }}" class="btn btn-primary" style="width: auto;">Редактировать</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-lessons">
+            <span class="no-lessons-icon">✅</span>
+            <p>Нет занятий, требующих переноса</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
