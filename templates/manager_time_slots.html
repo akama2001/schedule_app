@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Временные слоты{% endblock %}
+{% block content %}
+<div class="full-width-schedule">
+    <div class="container" style="max-width: none; padding: 0 20px;">
+        <div class="schedule-header">
+            <h1>Управление временными слотами</h1>
+            <p class="subtitle">Настройка пар занятий (время начала и окончания)</p>
+        </div>
+        <div class="actions" style="margin-bottom: 1rem;">
+            <a href="{{ url_for('manager_time_slot_create') }}" class="btn btn-primary">+ Добавить слот</a>
+        </div>
+        <div style="overflow-x: auto;">
+            <table style="width:100%; min-width: 600px; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Порядок</th>
+                        <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Название</th>
+                        <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Начало</th>
+                        <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Окончание</th>
+                        <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for slot in slots %}
+                    <tr>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">{{ slot.order }}</td>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">{{ slot.name }}</td>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">{{ slot.start_time.strftime('%H:%M') }}</td>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">{{ slot.end_time.strftime('%H:%M') }}</td>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid var(--border); white-space: nowrap;">
+                            <a href="{{ url_for('manager_time_slot_edit', slot_id=slot.id) }}" class="btn btn-outline btn-sm">Редактировать</a>
+                            <form method="POST" action="{{ url_for('manager_time_slot_delete', slot_id=slot.id) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Удалить слот?')">Удалить</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

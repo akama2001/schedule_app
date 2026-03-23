@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Редактирование группы{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="schedule-header">
+        <h1>Редактирование группы {{ group.name }}</h1>
+    </div>
+
+    <div class="selection-card">
+        <form method="POST">
+            <div class="form-group">
+                <label for="name">Название группы</label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ group.name }}" required>
+            </div>
+            <div class="form-group">
+                <label for="course">Курс</label>
+                <input type="number" class="form-control" id="course" name="course" value="{{ group.course }}" min="1" max="6" required>
+            </div>
+            <div class="form-group">
+                <label for="specialty_id">Специальность</label>
+                <select class="form-control" id="specialty_id" name="specialty_id" required>
+                    {% for spec in specialties %}
+                    <option value="{{ spec.id }}" {% if group.specialty_id == spec.id %}selected{% endif %}>
+                        {{ spec.code }} – {{ spec.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="student_count">Количество студентов</label>
+                <input type="number" class="form-control" id="student_count" name="student_count" value="{{ group.student_count }}" min="0" required>
+            </div>
+            <div class="actions">
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+                <a href="{{ url_for('manager_groups_list') }}" class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

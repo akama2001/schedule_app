@@ -1,27 +1,4 @@
 <!DOCTYPE html>
-<nav class="navbar">
-    <div class="container">
-        <a href="/" class="logo">SchedulePro</a>
-        <div class="nav-links">
-            {% if current_user.is_authenticated %}
-                <span>{{ current_user.username }} ({{ current_user.role }})</span>
-                {% if current_user.is_admin() %}
-                    <a href="{{ url_for('admin_panel') }}">Админка</a>
-                {% elif current_user.is_manager() %}
-                    <a href="{{ url_for('manager_pending') }}">Переносы</a>
-                {% elif current_user.is_teacher() %}
-                    <a href="{{ url_for('teacher_lessons') }}">Мои занятия</a>
-                {% endif %}
-                <a href="{{ url_for('schedule') }}">Расписание</a>
-                <a href="{{ url_for('logout') }}">Выйти</a>
-            {% else %}
-                <a href="{{ url_for('login') }}">Вход</a>
-                <a href="{{ url_for('register') }}">Регистрация</a>
-            {% endif %}
-        </div>
-    </div>
-</nav>
-
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -29,11 +6,129 @@
     <title>{% block title %}Расписание занятий{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Стили для выпадающего меню */
+        .navbar {
+            position: relative;
+        }
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .dropdown {
+            position: relative;
+        }
+        .dropdown > a {
+            cursor: pointer;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: var(--surface);
+            min-width: 200px;
+            box-shadow: var(--shadow);
+            border-radius: 8px;
+            z-index: 1000;
+            border: 1px solid var(--border);
+        }
+        .dropdown-content a {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .dropdown-content a:hover {
+            background: var(--background);
+            color: var(--primary);
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        @media (max-width: 768px) {
+            .nav-links {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            .dropdown-content {
+                position: static;
+                box-shadow: none;
+                border: none;
+                margin-left: 1rem;
+            }
+            .dropdown:hover .dropdown-content {
+                display: none;
+            }
+            .dropdown.active .dropdown-content {
+                display: block;
+            }
+        }
+    </style>
 </head>
 <body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">SchedulePro</a>
+            <div class="nav-links">
+                {% if current_user.is_authenticated %}
+                    <!-- Расписание: для студента – своя группа, для остальных – выбор группы -->
+                    {% if current_user.is_student() %}
+                        <a href="{{ url_for('schedule', group_id=current_user.group_id) }}">Расписание</a>
+                    {% else %}
+                        <a href="{{ url_for('schedule') }}">Расписание</a>
+                    {% endif %}
 
+                    {% if current_user.is_teacher() %}
+                        <a href="{{ url_for('teacher_lessons') }}">Мои занятия</a>
+                    {% endif %}
+
+                    {% if current_user.is_manager() or current_user.is_admin() %}
+                        <div class="dropdown">
+                            <a>Управление</a>
+                            <div class="dropdown-content">
+                                <a href="{{ url_for('manager_schedule', group_id=1) }}">Расписание групп</a>
+                                <a href="{{ url_for('manager_time_slots') }}">Временные слоты</a>
+                                <a href="{{ url_for('manager_rooms_schedule') }}">Расписание помещений</a>
+                                <a href="{{ url_for('manager_groups_list') }}">Группы</a>
+                                <a href="{{ url_for('manager_teachers') }}">Преподаватели</a>
+                                <a href="{{ url_for('manager_locations') }}">Локации и помещения</a>
+                                <a href="{{ url_for('manager_pending') }}">Запросы на перенос</a>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if current_user.is_admin() %}
+                        <div class="dropdown">
+                            <a>Пользователи</a>
+                            <div class="dropdown-content">
+                                <a href="{{ url_for('admin_panel') }}">Все пользователи</a>
+                                <a href="{{ url_for('admin_panel') }}#create-user">Создать пользователя</a>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <a href="{{ url_for('logout') }}">Выйти</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Вход</a>
+                    <a href="{{ url_for('register') }}">Регистрация</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
 
     <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="container">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
         {% block content %}{% endblock %}
     </main>
 
@@ -42,6 +137,21 @@
             <p>&copy; 2026 Расписание занятий</p>
         </div>
     </footer>
+
+    <!-- JavaScript для мобильного меню (если нужно) -->
+    <script>
+        // Для мобильных устройств: клик по пункту с подменю раскрывает его
+        const dropdowns = document.querySelectorAll('.dropdown > a');
+        dropdowns.forEach(link => {
+            link.addEventListener('click', (e) => {
+                if (window.innerWidth <= 768) {
+                    e.preventDefault();
+                    const parent = link.parentElement;
+                    parent.classList.toggle('active');
+                }
+            });
+        });
+    </script>
 
     {% block scripts %}{% endblock %}
 </body>

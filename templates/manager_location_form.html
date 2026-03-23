@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}{% if location %}Редактирование локации{% else %}Создание локации{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="schedule-header">
+        <h1>{% if location %}Редактирование локации{% else %}Создание локации{% endif %}</h1>
+    </div>
+
+    <div class="selection-card">
+        <form method="POST">
+            <div class="form-group">
+                <label for="name">Название локации</label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ location.name if location else '' }}" required>
+            </div>
+            <div class="form-group">
+                <label for="address">Адрес</label>
+                <input type="text" class="form-control" id="address" name="address" value="{{ location.address if location else '' }}">
+            </div>
+            <div class="actions">
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+                <a href="{{ url_for('manager_locations') }}" class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Расписание по помещениям{% endblock %}
+
+{% block content %}
+<div class="full-width-schedule">
+    <div class="container" style="max-width: none; padding: 0 20px;">
+        <div class="schedule-header">
+            <h1>Расписание занятий по помещениям</h1>
+            <p class="subtitle">Просмотр загрузки аудиторий</p>
+        </div>
+
+        <div class="selection-card" style="max-width: 100%; margin-bottom: 2rem;">
+            <form method="GET" action="{{ url_for('manager_rooms_schedule') }}" id="filter-form">
+                <div class="form-group">
+                    <label for="location_id">Локация</label>
+                    <select class="form-control" id="location_id" name="location_id">
+                        <option value="">-- Все локации --</option>
+                        {% for loc in locations %}
+                        <option value="{{ loc.id }}" {% if selected_location and selected_location.id == loc.id %}selected{% endif %}>
+                            {{ loc.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if rooms %}
+        {% for room in rooms %}
+        <div class="room-schedule-card" style="margin-bottom: 2rem; border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+            <div class="room-header" style="background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%); color: white; padding: 1rem;">
+                <h3 style="margin: 0;">{{ room.location.name }}, ауд. {{ room.name }}</h3>
+                <small>Вместимость: {{ room.capacity }} чел., Тип: {{ room.type }}</small>
+            </div>
+            <div style="padding: 1rem; overflow-x: auto;">
+                <div class="week-tabs-section" style="margin-bottom: 1rem;">
+                    <div class="week-tabs">
+                        <button class="week-tab active" data-room="{{ room.id }}" data-week="week1">
+                            Текущая неделя
+                        </button>
+                        <button class="week-tab" data-room="{{ room.id }}" data-week="week2">
+                            Следующая неделя
+                        </button>
+                    </div>
+                </div>
+                <div id="room-{{ room.id }}-week1" class="room-week-panel active">
+                    <div class="loading">Загрузка расписания...</div>
+                </div>
+                <div id="room-{{ room.id }}-week2" class="room-week-panel" style="display: none;">
+                    <div class="loading">Загрузка расписания...</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="container" style="text-align: center; padding: 2rem;">
+            <p>Нет помещений для отображения</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    async function loadRoomSchedule(roomId, weekId) {
+        const container = document.getElementById(`room-${roomId}-${weekId}`);
+        if (!container) return;
+        if (container.dataset.loaded === 'true') return;
+        container.innerHTML = '<div class="loading">Загрузка расписания...</div>';
+
+        try {
+            const response = await fetch(`/api/room-schedule/${roomId}`);
+            const data = await response.json();
+            const allDates = data.dates;
+            const slots = data.slots;
+            const schedule = data.schedule;
+
+            // Определяем даты для выбранной недели
+            const startIdx = weekId === 'week1' ? 0 : 7;
+            const dates = allDates.slice(startIdx, startIdx + 7);
+            if (!dates.length) {
+                container.innerHTML = '<div class="no-lessons">Нет данных</div>';
+                return;
+            }
+
+            // Формируем заголовки столбцов: помещение + дата (день недели, дата)
+            let headers = '<th style="border: 1px solid var(--border); padding: 0.5rem; text-align: center;">Время</th>';
+            for (const dateStr of dates) {
+                const dateObj = new Date(dateStr);
+                const dayNames = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
+                const dayName = dayNames[dateObj.getDay() === 0 ? 6 : dateObj.getDay() - 1];
+                const formattedDate = `${dateObj.getDate().toString().padStart(2,'0')}.${(dateObj.getMonth()+1).toString().padStart(2,'0')}`;
+                headers += `<th style="border: 1px solid var(--border); padding: 0.5rem; text-align: center;">${dayName}<br>${formattedDate}</th>`;
+            }
+
+            // Строки для каждого слота
+            let rows = '';
+            for (const slot of slots) {
+                rows += `<tr><td style="border: 1px solid var(--border); padding: 0.5rem; text-align: center;"><strong>${slot.name}</strong><br>${slot.start}–${slot.end}</td>`;
+                for (const dateStr of dates) {
+                    const lessonId = schedule[dateStr]?.[slot.id];
+                    const lesson = data.lessons_details[lessonId];
+                    if (lesson) {
+                        rows += `<td style="border: 1px solid var(--border); padding: 0.5rem; vertical-align: top;">
+                                    <strong>${lesson.subject}</strong><br>
+                                    ${lesson.type}<br>
+                                    ${lesson.teacher}<br>
+                                    📍 ${lesson.location}<br>
+                                    <small>Группа: ${lesson.group_name || '—'}<br>
+                                    Специальность: ${lesson.specialty || '—'}</small>
+                                   </td>`;
+                    } else {
+                        rows += `<td style="border: 1px solid var(--border); padding: 0.5rem; text-align: center; color: var(--text-secondary);">—</td>`;
+                    }
+                }
+                rows += '</tr>';
+            }
+
+            const tableHtml = `
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; min-width: 800px; border-collapse: collapse;">
+                        <thead><tr>${headers}</tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            `;
+            container.innerHTML = tableHtml;
+            container.dataset.loaded = 'true';
+        } catch (error) {
+            console.error('Ошибка загрузки:', error);
+            container.innerHTML = '<div class="alert alert-danger">Ошибка загрузки расписания</div>';
+        }
+    }
+
+    function initTabs() {
+        const tabs = document.querySelectorAll('.week-tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const roomId = this.dataset.room;
+                const week = this.dataset.week;
+                const activePanel = document.querySelector(`#room-${roomId}-${week}`);
+                const siblingPanels = document.querySelectorAll(`[id^="room-${roomId}-"]`);
+                siblingPanels.forEach(panel => panel.style.display = 'none');
+                activePanel.style.display = 'block';
+
+                const roomTabs = document.querySelectorAll(`.week-tab[data-room="${roomId}"]`);
+                roomTabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+
+                loadRoomSchedule(roomId, week);
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        initTabs();
+        document.querySelectorAll('.week-tab.active').forEach(tab => {
+            const roomId = tab.dataset.room;
+            const week = tab.dataset.week;
+            loadRoomSchedule(roomId, week);
+        });
+
+        const locationSelect = document.getElementById('location_id');
+        const filterForm = document.getElementById('filter-form');
+        if (locationSelect && filterForm) {
+            locationSelect.addEventListener('change', function() {
+                filterForm.submit();
+            });
+        }
+    });
+</script>
+{% endblock %}

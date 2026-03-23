@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Специальности преподавателя {{ teacher.username }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="schedule-header">
+        <h1>Специальности преподавателя</h1>
+        <p>Преподаватель: <strong>{{ teacher.username }}</strong> ({{ teacher.email }})</p>
+        <p>Выберите специальности, занятия по которым может вести этот преподаватель.</p>
+    </div>
+
+    <div class="selection-card">
+        <form method="POST">
+            <div class="form-group">
+                {% for spec in specialties %}
+                <div class="checkbox" style="margin-bottom: 0.5rem;">
+                    <label>
+                        <input type="checkbox" name="specialty_ids" value="{{ spec.id }}"
+                               {% if spec.id in selected_ids %}checked{% endif %}>
+                        {{ spec.code }} – {{ spec.name }}
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="actions">
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+                <a href="{{ return_url }}" class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

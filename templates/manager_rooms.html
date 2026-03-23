@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Помещения{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="schedule-header">
+        <h1>Управление помещениями</h1>
+        <p class="subtitle">
+            {% if location %}
+                Помещения локации «{{ location.name }}»
+            {% else %}
+                Все помещения
+            {% endif %}
+        </p>
+    </div>
+
+    <div class="selection-card" style="max-width: 100%; margin-bottom: 1rem;">
+        <form method="GET" action="{{ url_for('manager_rooms') }}" id="filter-form">
+            <div class="form-row" style="display: flex; gap: 1rem; align-items: flex-end;">
+                <div class="form-group" style="flex: 1;">
+                    <label for="location_id">Локация</label>
+                    <select class="form-control" id="location_id" name="location_id">
+                        <option value="">-- Все локации --</option>
+                        {% for loc in locations %}
+                        <option value="{{ loc.id }}" {% if location and location.id == loc.id %}selected{% endif %}>
+                            {{ loc.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% if location %}
+                <div class="form-group">
+                    <a href="{{ url_for('manager_rooms') }}" class="btn btn-secondary">Сбросить</a>
+                </div>
+                {% endif %}
+                <div class="form-group">
+                    <a href="{{ url_for('manager_room_create') }}" class="btn btn-primary">+ Добавить помещение</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; min-width: 600px; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Название</th>
+                    <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Локация</th>
+                    <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Вместимость</th>
+                    <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Тип</th>
+                    <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Действия</th>
+                 </>
+            </thead>
+            <tbody>
+                {% for room in rooms %}
+                 <tr>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">{{ room.name }}</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">{{ room.location.name }}</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">{{ room.capacity }}</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">{{ room.type }}</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border); white-space: nowrap;">
+                        <a href="{{ url_for('manager_room_edit', room_id=room.id) }}" class="btn btn-outline btn-sm">Редактировать</a>
+                        <form method="POST" action="{{ url_for('manager_room_delete', room_id=room.id) }}" style="display: inline;">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Удалить помещение?')">Удалить</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 2rem;">Нет помещений</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Автоматическая отправка формы при изменении выбора
+        const locationSelect = document.getElementById('location_id');
+        const filterForm = document.getElementById('filter-form');
+        if (locationSelect && filterForm) {
+            locationSelect.addEventListener('change', function() {
+                filterForm.submit();
+            });
+        }
+    </script>
+</div>
+{% endblock %}

@@ -12,7 +12,7 @@
                 <span class="breadcrumb-separator">/</span>
                 <span class="breadcrumb-current">Расписание</span>
             </div>
-            <h2 class="schedule-title">Расписание занятий {{ specialty.name }} {{ group.name }} группы {{ group.course }} курса
+            <h2 class="schedule-title">Расписание занятий {{ specialty.name }} {{ group.name }} группы {{ group.course }} курса</h2>
         </div>
         <div class="header-info">
             <div class="date-range">
@@ -43,16 +43,16 @@
     </section>
 
     <!-- Легенда -->
-<div class="lesson-types">
-    <div class="legend-item">
-        <span class="legend-color" style="display: inline-block; width: 12px; height: 12px; background: #9aeeb3; border: 1px solid #86efac; border-radius: 4px;"></span>
-        <span>Лекция</span>
+    <div class="lesson-types">
+        <div class="legend-item">
+            <span class="legend-color" style="display: inline-block; width: 12px; height: 12px; background: #9aeeb3; border: 1px solid #86efac; border-radius: 4px;"></span>
+            <span>Лекция</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="display: inline-block; width: 12px; height: 12px; background: #7a8ea8; border: 1px solid #93c5fd; border-radius: 4px;"></span>
+            <span>Практика</span>
+        </div>
     </div>
-    <div class="legend-item">
-        <span class="legend-color" style="display: inline-block; width: 12px; height: 12px; background: #7a8ea8; border: 1px solid #93c5fd; border-radius: 4px;"></span>
-        <span>Практика</span>
-    </div>
-</div
 
     <!-- Вкладки недель -->
     <section class="week-tabs-section">
@@ -102,7 +102,7 @@
                                 <div class="lesson-body">
                                     <h4 class="lesson-subject">{{ lesson.subject_name }}</h4>
                                     <div class="lesson-meta">
-                                        <span class="lesson-type-badge">{{ lesson.lesson_type }} </style></span>
+                                        <span class="lesson-type-badge">{{ lesson.lesson_type }}</span>
                                         <span class="lesson-location">📍 {{ lesson.location }}</span>
                                     </div>
                                     {% if lesson.teacher %}
@@ -182,4 +182,92 @@
         </a>
     </section>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Цвета фона для типов занятий
+        const typeColors = {
+            'Лекция': '#f0fdf4',
+            'Практика': '#eff6ff',
+            'Лабораторная': '#fffbeb'
+        };
+        
+        function applyDayContentColors() {
+            document.querySelectorAll('.day-content').forEach(dayContent => {
+                const lessonsCount = parseInt(dayContent.dataset.lessonsCount) || 0;
+                if (lessonsCount === 0) {
+                    dayContent.style.background = '#ffffff';
+                    return;
+                }
+                const firstLesson = dayContent.querySelector('.lesson-card');
+                if (!firstLesson) {
+                    dayContent.style.background = '#ffffff';
+                    return;
+                }
+                const lessonType = firstLesson.dataset.lessonType;
+                const bgColor = typeColors[lessonType] || '#ffffff';
+                dayContent.style.background = bgColor;
+                dayContent.style.transition = 'background-color 0.3s ease';
+            });
+        }
+        
+        function initTabs() {
+            const tabs = document.querySelectorAll('.week-tab');
+            const panels = document.querySelectorAll('.week-panel');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const targetTab = this.dataset.tab;
+                    tabs.forEach(t => t.classList.remove('active'));
+                    panels.forEach(p => p.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById(targetTab).classList.add('active');
+                    setTimeout(applyDayContentColors, 50);
+                });
+            });
+        }
+        
+        function initAnimation() {
+            const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+            document.querySelectorAll('.day-column').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                observer.observe(el);
+            });
+        }
+        
+        function highlightCurrentLesson() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const currentTime = currentHour * 60 + currentMinute;
+            document.querySelectorAll('.day-column.today .lesson-card').forEach(card => {
+                const timeText = card.querySelector('.time-start')?.textContent;
+                if (!timeText) return;
+                const [hours, minutes] = timeText.split(':').map(Number);
+                const lessonStart = hours * 60 + minutes;
+                const lessonEnd = lessonStart + 95;
+                if (currentTime >= lessonStart && currentTime <= lessonEnd) {
+                    card.style.boxShadow = '0 0 0 3px rgba(79, 70, 229, 0.3)';
+                    card.style.transform = 'scale(1.02)';
+                }
+            });
+        }
+        
+        applyDayContentColors();
+        initTabs();
+        initAnimation();
+        highlightCurrentLesson();
+    });
+</script>
 {% endblock %}

@@ -14,9 +14,7 @@
                 <form method="POST" action="{{ url_for('confirm_lesson', lesson_id=lesson.id) }}" style="display:inline;">
                     <button type="submit" class="btn btn-success">Подтвердить</button>
                 </form>
-                <form method="POST" action="{{ url_for('request_reschedule', lesson_id=lesson.id) }}" style="display:inline;">
-                    <button type="submit" class="btn btn-warning">Запросить перенос</button>
-                </form>
+                <a href="{{ url_for('request_reschedule', lesson_id=lesson.id) }}" class="btn btn-warning">Запросить перенос</a>
                 {% endif %}
             </div>
         </div>

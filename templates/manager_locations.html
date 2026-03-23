@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Локации{% endblock %}
+
+{% block content %}
+<div class="full-width-schedule">
+    <div class="container" style="max-width: none; padding: 0 20px;">
+        <div class="schedule-header">
+            <h1>Управление локациями</h1>
+            <p class="subtitle">Создание, редактирование и удаление локаций</p>
+        </div>
+
+        <div class="actions" style="margin-bottom: 1rem;">
+            <a href="{{ url_for('manager_location_create') }}" class="btn btn-primary">+ Добавить локацию</a>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; min-width: 600px; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Название</th>
+                        <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Адрес</th>
+                        <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Помещений</th>
+                        <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Действия</th>
+                    </thead>
+                <tbody>
+                    {% for location in locations %}
+                    全
+                        <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">{{ location.name }}</td>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">{{ location.address }}</td>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">{{ location.rooms|length }}</td>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid var(--border); white-space: nowrap;">
+                            <a href="{{ url_for('manager_rooms', location_id=location.id) }}" class="btn btn-success btn-sm">Помещения</a>
+                            <a href="{{ url_for('manager_location_edit', location_id=location.id) }}" class="btn btn-success btn-sm">Редактировать</a>
+                            <form method="POST" action="{{ url_for('manager_location_delete', location_id=location.id) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Удалить локацию и все помещения?')">Удалить</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

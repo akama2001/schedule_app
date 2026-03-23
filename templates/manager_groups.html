@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Управление расписанием групп{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="schedule-header">
+        <h1>Управление расписанием групп</h1>
+        <p class="subtitle">Выберите специальность, затем группу для редактирования расписания</p>
+    </div>
+
+    <!-- Вкладки специальностей -->
+    <div class="specialty-tabs" style="margin-bottom: 2rem;">
+        <div class="week-tabs" style="background: var(--background);">
+            {% for spec in specialties %}
+            <button class="specialty-tab week-tab {% if loop.first %}active{% endif %}" data-specialty-id="{{ spec.id }}">
+                <span class="tab-label">{{ spec.code }}</span>
+                <span class="tab-dates">{{ spec.name[:30] }}{% if spec.name|length > 30 %}…{% endif %}</span>
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Панели групп для каждой специальности -->
+    <div class="specialty-content">
+        {% for spec in specialties %}
+        <div class="specialty-panel" id="specialty-{{ spec.id }}" style="display: {% if loop.first %}block{% else %}none{% endif %};">
+            <div class="selection-card">
+                <h3>Группы специальности «{{ spec.code }} – {{ spec.name }}»</h3>
+                <div class="groups-list">
+                    {% if spec.groups %}
+                        {% for group in spec.groups|sort(attribute='name') %}
+                        <div class="group-item" style="margin-bottom: 1rem; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>{{ group.name }}</strong> ({{ group.course }} курс)
+                            </div>
+                            <a href="{{ url_for('manager_schedule', group_id=group.id) }}" class="btn btn-primary" style="width: auto;">Редактировать расписание</a>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>Нет групп для этой специальности.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Переключение вкладок специальностей
+    const tabs = document.querySelectorAll('.specialty-tab');
+    const panels = document.querySelectorAll('.specialty-panel');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const specialtyId = this.dataset.specialtyId;
+            // Убираем активный класс у всех вкладок
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            // Скрываем все панели
+            panels.forEach(panel => panel.style.display = 'none');
+            // Показываем нужную
+            const activePanel = document.getElementById(`specialty-${specialtyId}`);
+            if (activePanel) activePanel.style.display = 'block';
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

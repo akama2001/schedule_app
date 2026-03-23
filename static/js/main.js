@@ -79,7 +79,21 @@ document.addEventListener('DOMContentLoaded', function() {
         el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
         observer.observe(el);
     });
-    
+    // Выбор помещений
+    document.getElementById('location_id').addEventListener('change', function() {
+    const locationId = this.value;
+    const roomSelect = document.getElementById('room_id');
+    for (let option of roomSelect.options) {
+        if (option.value === '') continue;
+        const roomLocation = option.getAttribute('data-location');
+        if (locationId === '' || roomLocation === locationId) {
+            option.style.display = '';
+        } else {
+            option.style.display = 'none';
+        }
+    }
+    roomSelect.value = '';
+});
     // Подсветка текущего занятия
     function highlightCurrentLesson() {
         const now = new Date();
@@ -103,4 +117,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     highlightCurrentLesson();
+});
+// фильтр без кнопки (автоматическая отправка при изменении)
+document.getElementById('specialty_id').addEventListener('change', function() {
+    this.form.submit();
 });

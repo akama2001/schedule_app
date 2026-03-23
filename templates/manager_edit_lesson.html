@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Редактирование занятия{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="schedule-header">
+        <h1>Редактирование занятия</h1>
+    </div>
+
+    <div class="selection-card">
+        <form method="POST" action="{{ url_for('manager_edit_lesson', lesson_id=lesson.id) }}">
+            <!-- Предмет -->
+            <div class="form-group">
+                <label for="subject_name">Предмет</label>
+                <input type="text" class="form-control" id="subject_name" name="subject_name" 
+                       value="{{ lesson.subject_name }}" required>
+            </div>
+
+            <!-- Тип занятия -->
+            <div class="form-group">
+                <label for="lesson_type">Тип занятия</label>
+                <select class="form-control" id="lesson_type" name="lesson_type" required>
+                    <option value="Лекция" {% if lesson.lesson_type == 'Лекция' %}selected{% endif %}>Лекция</option>
+                    <option value="Практика" {% if lesson.lesson_type == 'Практика' %}selected{% endif %}>Практика</option>
+                    <option value="Лабораторная" {% if lesson.lesson_type == 'Лабораторная' %}selected{% endif %}>Лабораторная</option>
+                </select>
+            </div>
+
+            <!-- Группа -->
+            <div class="form-group">
+                <label for="group_id">Группа</label>
+                <select class="form-control" id="group_id" name="group_id" required>
+                    {% for g in groups %}
+                    <option value="{{ g.id }}" {% if lesson.group_id == g.id %}selected{% endif %}>
+                        {{ g.name }} ({{ g.course }} курс) - {{ g.specialty.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Дата -->
+            <div class="form-group">
+                <label for="lesson_date">Дата</label>
+                <input type="date" class="form-control" id="lesson_date" name="lesson_date" 
+                       value="{{ lesson.lesson_date.strftime('%Y-%m-%d') }}" required>
+            </div>
+
+            <!-- Время -->
+<div class="form-group">
+    <label for="time_slot_id">Временной слот</label>
+    <select class="form-control" id="time_slot_id" name="time_slot_id">
+        <option value="">-- Выберите слот (заполнит время) --</option>
+        {% for slot in time_slots %}
+        <option value="{{ slot.id }}" data-start="{{ slot.start_time.strftime('%H:%M') }}" data-end="{{ slot.end_time.strftime('%H:%M') }}" {% if lesson.time_slot_id == slot.id %}selected{% endif %}>
+            {{ slot.order }}. {{ slot.name }} ({{ slot.start_time.strftime('%H:%M') }} – {{ slot.end_time.strftime('%H:%M') }})
+        </option>
+        {% endfor %}
+    </select>
+    <small class="form-text text-muted">При выборе слота время начала и окончания заполнится автоматически.</small>
+</div>
+
+<div class="form-row" style="display: flex; gap: 1rem;">
+    <div class="form-group" style="flex: 1;">
+        <label for="start_time">Время начала</label>
+        <input type="time" class="form-control" id="start_time" name="start_time" value="{{ lesson.start_time.strftime('%H:%M') if lesson else '' }}" required>
+    </div>
+    <div class="form-group" style="flex: 1;">
+        <label for="end_time">Время окончания</label>
+        <input type="time" class="form-control" id="end_time" name="end_time" value="{{ lesson.end_time.strftime('%H:%M') if lesson else '' }}" required>
+    </div>
+</div>
+
+<script>
+    // тот же скрипт, что и выше
+</script>
+            <!-- Выбор помещения -->
+            <div class="form-group">
+                <label for="location_filter">Локация (фильтр)</label>
+                <select class="form-control" id="location_filter">
+                    <option value="">-- Все локации --</option>
+                    {% for loc in locations %}
+                    <option value="{{ loc.id }}" {% if lesson.room and lesson.room.location_id == loc.id %}selected{% endif %}>
+                        {{ loc.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="room_id">Помещение</label>
+                <select class="form-control" id="room_id" name="room_id" required>
+                    <option value="">-- Выберите помещение --</option>
+                    {% for room in rooms %}
+                    <option value="{{ room.id }}" data-location="{{ room.location_id }}"
+                            {% if lesson.room_id == room.id %}selected{% endif %}>
+                        {{ room.location.name }}, ауд. {{ room.name }} ({{ room.capacity }} мест, {{ room.type }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Преподаватель -->
+            <div class="form-group">
+                <label for="teacher_id">Преподаватель</label>
+                <select class="form-control" id="teacher_id" name="teacher_id">
+                    <option value="">-- Не выбран --</option>
+                    {% for teacher in teachers %}
+                    <option value="{{ teacher.id }}" {% if lesson.teacher_id == teacher.id %}selected{% endif %}>
+                        {{ teacher.username }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                <a href="{{ url_for('manager_schedule', group_id=lesson.group_id) }}" class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Фильтрация помещений по выбранной локации
+    const locationFilter = document.getElementById('location_filter');
+    const roomSelect = document.getElementById('room_id');
+    const allRooms = Array.from(roomSelect.options);
+
+    function filterRooms() {
+        const selectedLocation = locationFilter.value;
+        roomSelect.innerHTML = '<option value="">-- Выберите помещение --</option>';
+        allRooms.forEach(option => {
+            if (option.value === '') return;
+            const roomLocation = option.getAttribute('data-location');
+            if (!selectedLocation || roomLocation === selectedLocation) {
+                roomSelect.appendChild(option.cloneNode(true));
+            }
+        });
+        // После фильтрации восстановить выбранное помещение, если оно есть
+        const currentRoomId = "{{ lesson.room_id }}";
+        if (currentRoomId) {
+            for (let i = 0; i < roomSelect.options.length; i++) {
+                if (roomSelect.options[i].value === currentRoomId) {
+                    roomSelect.options[i].selected = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    locationFilter.addEventListener('change', filterRooms);
+    // Инициализация: фильтруем при загрузке
+    filterRooms();
+</script>
+{% endblock %}

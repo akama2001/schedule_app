@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Редактирование расписания {{ group.name }}{% endblock %}
+
+{% block content %}
+<div class="full-width-schedule">
+    <!-- Шапка и действия остаются внутри контейнера с отступами -->
+    <div class="container" style="max-width: none; padding: 0 20px;">
+        <div class="schedule-header">
+            <div>
+                <h1>Редактирование расписания</h1>
+                <h2>Группа {{ group.name }} ({{ group.course }} курс)</h2>
+                <p class="subtitle">Период: {{ start_date.strftime('%d.%m.%Y') }} — {{ end_date.strftime('%d.%m.%Y') }}</p>
+            </div>
+            <div>
+                <a href="{{ url_for('manager_groups') }}" class="btn btn-secondary">← Назад к списку групп</a>
+            </div>
+        </div>
+
+        <div class="actions" style="margin-bottom: 2rem;">
+            <a href="{{ url_for('manager_create_lesson', group_id=group.id) }}" class="btn btn-primary">+ Добавить занятие</a>
+        </div>
+    </div>
+
+    <!-- Вкладки недель и сетка расписания на всю ширину -->
+    <div class="full-width-tabs">
+        <div class="week-tabs-section" style="padding: 0 20px;">
+            <div class="week-tabs">
+                <button class="week-tab active" data-tab="week1">
+                    <span class="tab-label">Текущая неделя</span>
+                    <span class="tab-dates">{{ week1[0].strftime('%d.%m') }} — {{ week1[6].strftime('%d.%m') }}</span>
+                </button>
+                <button class="week-tab" data-tab="week2">
+                    <span class="tab-label">Следующая неделя</span>
+                    <span class="tab-dates">{{ week2[0].strftime('%d.%m') }} — {{ week2[6].strftime('%d.%m') }}</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="week-content" style="overflow-x: auto; padding: 0 20px;">
+            <div class="week-panel active" id="week1">
+                <div class="schedule-grid" style="min-width: 1000px; display: grid; grid-template-columns: repeat(7, minmax(280px, 1fr)); gap: 1rem;">
+                    {% for date in week1 %}
+                    <!-- ... содержимое дня ... -->
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="week-panel" id="week2">
+                <div class="schedule-grid" style="min-width: 1000px; display: grid; grid-template-columns: repeat(7, minmax(280px, 1fr)); gap: 1rem;">
+                    {% for date in week2 %}
+                    <!-- ... содержимое дня ... -->
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" style="margin-top: 2rem;">
+        <a href="{{ url_for('index') }}" class="btn btn-primary">Выбрать другую группу</a>
+    </div>
+</div>
+{% endblock %}

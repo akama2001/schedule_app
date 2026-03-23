@@ -590,3 +590,102 @@ body {
         font-size: 0.7rem;
     }
 }
+/* Специальные вкладки для специальностей */
+.specialty-tabs {
+    margin-bottom: 2rem;
+}
+
+.specialty-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 1rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    background: var(--background);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    min-height: 70px;
+}
+
+.specialty-tab:hover {
+    background: #eef2ff;
+    color: var(--primary);
+}
+
+.specialty-tab.active {
+    background: white;
+    color: var(--primary);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    font-weight: 600;
+}
+/* Полноширинные страницы расписания */
+.full-width-schedule {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+.full-width-schedule .container {
+    max-width: none;
+    width: 100%;
+    padding: 0 20px;
+}
+
+.full-width-tabs {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(280px, 1fr));
+    gap: 1rem;
+    min-width: 1000px; /* Принудительная прокрутка при сужении */
+}
+
+/* Для карточек помещений таблицы */
+.room-week-panel table {
+    width: 100%;
+    min-width: 800px;
+    border-collapse: collapse;
+}
+
+/* Адаптация на мобильных */
+@media (max-width: 768px) {
+    .full-width-schedule .container {
+        padding: 0 10px;
+    }
+    
+    .schedule-grid {
+        gap: 0.5rem;
+    }
+    
+    .room-week-panel table {
+        font-size: 12px;
+    }
+}
+.btn-danger {
+    background-color: #dc2626;
+    color: white;
+    border: none;
+}
+.btn-danger:hover:not(:disabled) {
+    background-color: #b91c1c;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+.btn-success {
+    background-color: #10b981;
+    color: white;
+    border: none;
+}
+.btn-success:hover:not(:disabled) {
+    background-color: #059669;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}

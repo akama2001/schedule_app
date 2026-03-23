@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Список групп{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="schedule-header">
+        <h1>Управление группами</h1>
+        <p class="subtitle">Редактирование названий, курсов, специальностей и количества студентов</p>
+    </div>
+
+    <!-- Фильтр по специальностям -->
+    <div class="selection-card" style="max-width: 100%; margin-bottom: 1rem;">
+        <form method="GET" action="{{ url_for('manager_groups_list') }}" id="filter-form">
+            <div class="form-row" style="display: flex; gap: 1rem; align-items: flex-end;">
+                <div class="form-group" style="flex: 1;">
+                    <label for="specialty_id">Специальность</label>
+                    <select class="form-control" id="specialty_id" name="specialty_id">
+                        <option value="">-- Все специальности --</option>
+                        {% for spec in all_specialties %}
+                        <option value="{{ spec.id }}" {% if selected_specialty_id == spec.id %}selected{% endif %}>
+                            {{ spec.code }} – {{ spec.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% if selected_specialty_id %}
+                <div class="form-group">
+                    <a href="{{ url_for('manager_groups_list') }}" class="btn btn-secondary">Сбросить</a>
+                </div>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Таблица групп -->
+    <div class="selection-card" style="max-width: 100%; overflow-x: auto;">
+        <table style="width: 100%; min-width: 600px; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Название</th>
+                    <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Курс</th>
+                    <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Специальность</th>
+                    <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Кол-во студентов</th>
+                    <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for group in groups %}
+                <tr>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">{{ group.name }}</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">{{ group.course }}</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">{{ group.specialty.name }}</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">{{ group.student_count }}</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">
+                        <a href="{{ url_for('manager_group_edit', group_id=group.id) }}" class="btn btn-outline btn-sm">Редактировать</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 2rem;">Нет групп для отображения</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Автоматическая отправка формы при изменении выбора
+    const specialtySelect = document.getElementById('specialty_id');
+    const filterForm = document.getElementById('filter-form');
+
+    if (specialtySelect && filterForm) {
+        specialtySelect.addEventListener('change', function() {
+            filterForm.submit();
+        });
+    }
+</script>
+{% endblock %}

@@ -10,7 +10,7 @@
     </div>
 
     <!-- Создание нового пользователя -->
-    <div class="selection-card" style="max-width: 600px; margin-bottom: 2rem;">
+    <div class="selection-card" style="max-width: 800px; margin-bottom: 2rem;">
         <h3>Создать нового пользователя</h3>
         <form method="POST" action="{{ url_for('admin_create_user') }}">
             <div class="form-group">
@@ -34,7 +34,9 @@
                     <option value="admin">Администратор</option>
                 </select>
             </div>
-            <div class="form-group">
+
+            <!-- Группа для студента -->
+            <div class="form-group" id="group-field">
                 <label for="group_id">Группа (для студента)</label>
                 <select class="form-control" id="group_id" name="group_id">
                     <option value="">-- Не выбрано --</option>
@@ -43,6 +45,23 @@
                     {% endfor %}
                 </select>
             </div>
+
+            <!-- Специальности для преподавателя (чекбоксы) -->
+            <div id="specialties-field" style="display: none;">
+                <label>Специальности (для преподавателя)</label>
+                <div class="specialties-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.5rem; margin-top: 0.5rem;">
+                    {% for spec in specialties %}
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="specialty_ids" value="{{ spec.id }}">
+                            {{ spec.code }} – {{ spec.name }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+                <small class="form-text text-muted">Если ничего не выбрано, преподаватель сможет вести занятия по любым специальностям.</small>
+            </div>
+
             <button type="submit" class="btn btn-primary">Создать</button>
         </form>
     </div>
@@ -59,6 +78,7 @@
                         <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Email</th>
                         <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Роль</th>
                         <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Группа</th>
+                        <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border);">Специальности</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -75,6 +95,19 @@
                                 —
                             {% endif %}
                         </td>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">
+                            {% if user.role == 'teacher' %}
+                                {% for spec in user.specialties %}
+                                    {{ spec.code }}{% if not loop.last %}, {% endif %}
+                                {% else %}
+                                    <em>Все</em>
+                                {% endfor %}
+                                <br>
+                                <a href="{{ url_for('admin_teacher_specialties', user_id=user.id) }}" class="btn btn-outline btn-sm">Изменить</a>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -87,4 +120,28 @@
         <a href="{{ url_for('logout') }}" class="btn btn-outline">Выйти</a>
     </div>
 </div>
+
+<script>
+    // Показывать/скрывать поля в зависимости от выбранной роли
+    const roleSelect = document.getElementById('role');
+    const groupField = document.getElementById('group-field');
+    const specialtiesField = document.getElementById('specialties-field');
+
+    function toggleFields() {
+        const role = roleSelect.value;
+        if (role === 'student') {
+            groupField.style.display = 'block';
+            specialtiesField.style.display = 'none';
+        } else if (role === 'teacher') {
+            groupField.style.display = 'none';
+            specialtiesField.style.display = 'block';
+        } else {
+            groupField.style.display = 'none';
+            specialtiesField.style.display = 'none';
+        }
+    }
+
+    roleSelect.addEventListener('change', toggleFields);
+    toggleFields();
+</script>
 {% endblock %}

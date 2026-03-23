@@ -1,38 +1,11 @@
-{% extends "base.html" %}
-
-{% block title %}Личный кабинет{% endblock %}
-
-{% block content %}
-<div class="container">
-    <div class="hero-section">
-        <h1>Добро пожаловать, {{ current_user.username }}!</h1>
-        <p class="subtitle">Ваша роль: 
-            {% if current_user.is_admin() %}Администратор
-            {% elif current_user.is_manager() %}Менеджер
-            {% elif current_user.is_teacher() %}Преподаватель
-            {% else %}Студент{% endif %}
-        </p>
-    </div>
-
-    <div class="selection-card" style="max-width: 800px;">
-        <h3 style="margin-bottom: 1rem;">Доступные действия</h3>
-        <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;">
-            {% if current_user.is_admin() %}
-                <a href="{{ url_for('admin_panel') }}" class="btn btn-primary">Панель администратора</a>
-            {% endif %}
-            {% if current_user.is_manager() %}
-                <a href="{{ url_for('manager_pending') }}" class="btn btn-primary">Занятия на перенос</a>
-                <a href="{{ url_for('schedule') }}" class="btn btn-secondary">Расписание групп</a>
-            {% endif %}
-            {% if current_user.is_teacher() %}
-                <a href="{{ url_for('teacher_lessons') }}" class="btn btn-primary">Мои занятия</a>
-                <a href="{{ url_for('schedule') }}" class="btn btn-secondary">Расписание групп</a>
-            {% endif %}
-            {% if current_user.is_student() %}
-                <a href="{{ url_for('schedule', group_id=current_user.group_id) }}" class="btn btn-primary">Моё расписание</a>
-            {% endif %}
-            <a href="{{ url_for('logout') }}" class="btn btn-outline">Выйти</a>
-        </div>
-    </div>
-</div>
-{% endblock %}
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    if current_user.is_admin():
+        return redirect(url_for('admin_panel'))
+    elif current_user.is_manager():
+        return redirect(url_for('manager_groups'))  
+    elif current_user.is_teacher():
+        return redirect(url_for('teacher_lessons'))
+    else:
+        return redirect(url_for('schedule', group_id=current_user.group_id))

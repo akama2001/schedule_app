@@ -4,29 +4,39 @@
 
 {% block content %}
 <div class="container">
-    <div class="schedule-header" style="flex-direction: column;">
+    <div class="schedule-header">
         <h1>Занятия, требующие переноса</h1>
         <p class="subtitle">Преподаватели запросили перенос этих занятий</p>
     </div>
 
     {% if lessons %}
-        <div class="lessons-list" style="display: flex; flex-direction: column; gap: 1rem;">
+        <div class="lessons-list">
             {% for lesson in lessons %}
-                <div class="lesson-item" style="background: var(--surface);">
-                    <div class="lesson-time">
-                        <span class="time-start">{{ lesson.lesson_date.strftime('%d.%m.%Y') }}</span>
-                        <span>{{ lesson.start_time.strftime('%H:%M') }} – {{ lesson.end_time.strftime('%H:%M') }}</span>
-                    </div>
-                    <div class="lesson-subject">{{ lesson.subject_name }} ({{ lesson.lesson_type }})</div>
-                    <div class="lesson-meta">
-                        <span>Группа: {{ lesson.group.name }}</span>
-                        <span>Преподаватель: {{ lesson.teacher or 'Не назначен' }}</span>
-                        <span>Аудитория: {{ lesson.location }}</span>
-                    </div>
-                    <div style="margin-top: 0.5rem;">
-                        <a href="{{ url_for('manager_edit_lesson', lesson_id=lesson.id) }}" class="btn btn-primary" style="width: auto;">Редактировать</a>
-                    </div>
+            <div class="lesson-item">
+                <div class="lesson-time">
+                    <span class="time-start">{{ lesson.lesson_date.strftime('%d.%m.%Y') }}</span>
+                    <span>{{ lesson.start_time.strftime('%H:%M') }} – {{ lesson.end_time.strftime('%H:%M') }}</span>
                 </div>
+                <div class="lesson-subject">{{ lesson.subject_name }} ({{ lesson.lesson_type }})</div>
+                <div class="lesson-meta">
+                    <span>Группа: {{ lesson.group.name }}</span>
+                    <span>Преподаватель: {{ lesson.teacher or 'Не назначен' }}</span>
+                    <span>Аудитория: {{ lesson.location }}</span>
+                </div>
+                {% if lesson.suggested_date %}
+                <div class="suggested-info" style="margin-top: 0.5rem; padding: 0.5rem; background: #fef3c7; border-radius: 4px;">
+                    <strong>Предложенный перенос:</strong>
+                    {{ lesson.suggested_date.strftime('%d.%m.%Y') }}
+                    {{ lesson.suggested_start_time.strftime('%H:%M') }} – {{ lesson.suggested_end_time.strftime('%H:%M') }}
+                    <form method="POST" action="{{ url_for('manager_accept_suggest', lesson_id=lesson.id) }}" style="display:inline; margin-left: 1rem;">
+                        <button type="submit" class="btn btn-success btn-sm">Принять предложение</button>
+                    </form>
+                </div>
+                {% endif %}
+                <div style="margin-top: 0.5rem;">
+                    <a href="{{ url_for('manager_edit_lesson', lesson_id=lesson.id) }}" class="btn btn-primary" style="width: auto;">Редактировать</a>
+                </div>
+            </div>
             {% endfor %}
         </div>
     {% else %}
